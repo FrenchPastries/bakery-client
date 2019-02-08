@@ -37,12 +37,12 @@ const client = require('bakery-client')
 
 //the uuid given by the bakery to this instance of client
 
-const api = ''
+const serviceInfos = ''
 
 const bakeryMiddleware = client.register({
   hostname: process.env.REGISTRY_HOST,
   port: process.env.REGISTRY_PORT,
-  api
+  serviceInfos
 })
 
 const allRoutes = Assemble.routes([

@@ -1,9 +1,9 @@
 const fetch = require('node-fetch')
 
-const registerService = ({ hostname, port, api }) => {
+const registerService = ({ hostname, port, serviceInfos }) => {
   return fetch(`http://${hostname}:${port}/register`, {
     method: 'post',
-    body: JSON.stringify(api),
+    body: JSON.stringify(serviceInfos),
     headers: {
       'Content-Type': 'application/json'
     }
@@ -19,7 +19,8 @@ const pingResponse = (uuid) => ({
 })
 
 const pingOrHandle = (handler, request) => (uuid) => {
-  if (request.url.pathname === '/ping') {
+  console.log(request.url)
+  if (request.url.pathname === '/heartbeat') {
     return pingResponse(uuid)
   } else {
     return handler(request)
