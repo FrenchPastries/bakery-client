@@ -1,10 +1,10 @@
 # Bakery-client
 
-To register on a @frenchpastries/bakery
+To register on a `@FrenchPastries/bakery`.
 
 # Getting Started
 
-Getting started with MilleFeuille is simple and easy.
+Getting started with Bakery Client is simple and easy.
 
 ```bash
 # For Yarn users
@@ -16,13 +16,38 @@ yarn add @frenchpastries/bakery-client
 npm install --save @frenchpastries/bakery-client
 ```
 
+## Interface to register
+Service should send a json interface when registering:
+
+```json
+{
+  "name": "my-service",
+  "version": "1.2.3",
+  "state": "string",
+  "address": "127.0.0.1:1234",
+  "interface": {
+    "type": "REST || GraphQL",
+    "value": "REST routes or GraphQL Schema"
+  }
+}
+```
 
 ```javascript
 const client = require('bakery-client')
 
 //the uuid given by the bakery to this instance of client
 
-client.register(process.env.REGISTERY_HOST, process.env.REGISTERY_PORT, service)
-  .then(uuid => console.log(uuid))
-//{ uuid: '32142fa4-40e2-46e7-b2c8-c7c7188d4e52' }
+const api = ''
+
+const bakeryMiddleware = client.register({
+  hostname: process.env.REGISTRY_HOST,
+  port: process.env.REGISTRY_PORT,
+  api
+})
+
+const allRoutes = Assemble.routes([
+  get('/', () => ({ statusCode: 200 }))
+])
+
+MilleFeuille.create(bakeryMiddleware(allRoutes))
 ```
