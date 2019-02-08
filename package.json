@@ -2,9 +2,14 @@
   "name": "bakery-client",
   "version": "0.0.1",
   "description": "module to register to a bakery",
-  "main": "index.js",
-  "scripts": {
-  },
+  "main": "src/index.js",
+  "scripts": {},
   "author": "Arthur Escriou <arthur.escriou@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "files": [
+    "/src"
+  ],
+  "dependencies": {
+    "node-fetch": "^2.3.0"
+  }
 }
