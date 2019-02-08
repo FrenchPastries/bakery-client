@@ -1,0 +1,10 @@
+{
+  "name": "bakery-client",
+  "version": "0.0.1",
+  "description": "module to register to a bakery",
+  "main": "index.js",
+  "scripts": {
+  },
+  "author": "Arthur Escriou <arthur.escriou@gmail.com>",
+  "license": "MIT"
+}
