@@ -1,6 +1,6 @@
 {
   "name": "@frenchpastries/bakery-client",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "module to register to a bakery",
   "main": "src/index.js",
   "scripts": {},
@@ -11,5 +11,8 @@
   ],
   "dependencies": {
     "node-fetch": "^2.3.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0"
   }
 }
