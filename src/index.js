@@ -18,12 +18,24 @@ const pingResponse = (uuid) => ({
   body: JSON.stringify(uuid)
 })
 
-const pingOrHandle = (handler, request) => (uuid) => {
-  console.log(request.url)
-  if (request.url.pathname === '/heartbeat') {
+const generateServicesAPI = interfaces => {
+  return {}
+}
+
+const pingOrHandle = (glob, handler, request) => (uuid) => {
+  const { url, body } = request
+  if (url.pathname === '/heartbeat') {
+    if (body !== glob.interfaces) {
+      console.log(body);
+      console.log(glob.interfaces);
+      glob.interfaces = body
+      glob.services = generateServicesAPI(JSON.parse(glob.interfaces))
+    }
     return pingResponse(uuid)
   } else {
-    return handler(request)
+    const services = glob.services
+    const newRequest = { ...request, services }
+    return handler(newRequest)
   }
 }
 
@@ -35,10 +47,16 @@ const responseError = (error) => {
   }
 }
 
-const responsePingOrHandle = (registering) => (handler) => (request) => {
-  return registering
-    .then(pingOrHandle(handler, request))
-    .catch(responseError)
+const responsePingOrHandle = (registering) => {
+  const glob = {
+    interfaces: {},
+    services: {},
+  }
+  return (handler) => (request) => {
+    return registering
+      .then(pingOrHandle(glob, handler, request))
+      .catch(responseError)
+  }
 }
 
 const register = (options) => {
