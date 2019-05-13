@@ -3,11 +3,11 @@ const fetch = require('node-fetch')
 const registerService = ({ hostname, port, serviceInfos }) => {
   return fetch(`http://${hostname}:${port}/register`, {
     method: 'post',
-    body: JSON.stringify(serviceInfos),
     headers: {
       'Content-Type': 'application/json'
-    }
-  }).then((res) => res.json())
+    },
+    body: JSON.stringify(serviceInfos),
+  }).then(res => res.json())
 }
 
 const pingResponse = (uuid) => ({
@@ -18,18 +18,37 @@ const pingResponse = (uuid) => ({
   body: JSON.stringify(uuid)
 })
 
+const generateServiceAPIHelp = value => {
+  return Object.entries(value).reduce((acc, [ verb, paths ]) => {
+    return paths.reduce((acc, path) => {
+      return acc
+    }, acc)
+  }, {})
+}
+
+const generateServiceAPI = ({ type, value }) => {
+  switch(type) {
+    case 'REST': return generateServiceAPIHelp(value)
+    case 'GraphQL': return {}
+    default: return {}
+  }
+}
+
 const generateServicesAPI = interfaces => {
-  return {}
+  return Object.entries(interfaces).reduce((acc, [ serviceName, interf ]) => {
+    return {
+      ...acc,
+      [serviceName]: generateServiceAPI(interf),
+    }
+  }, {})
 }
 
 const pingOrHandle = (glob, handler, request) => (uuid) => {
   const { url, body } = request
   if (url.pathname === '/heartbeat') {
     if (body !== glob.interfaces) {
-      console.log(body);
-      console.log(glob.interfaces);
       glob.interfaces = body
-      glob.services = generateServicesAPI(JSON.parse(glob.interfaces))
+      glob.services = glob.interfaces // generateServicesAPI(JSON.parse(glob.interfaces))
     }
     return pingResponse(uuid)
   } else {

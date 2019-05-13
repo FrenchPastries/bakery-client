@@ -1,7 +1,7 @@
 {
-  "name": "@frenchpastries/bakery-client",
-  "version": "0.1.0",
-  "description": "module to register to a bakery",
+  "name": "@frenchpastries/customer",
+  "version": "0.0.0",
+  "description": "Middleware to auto-register a service to a Bakery",
   "main": "src/index.js",
   "scripts": {},
   "author": "Arthur Escriou <arthur.escriou@gmail.com>",
