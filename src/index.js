@@ -1,21 +1,20 @@
 const fetch = require('node-fetch')
 
-const registerService = ({ hostname, port, serviceInfos }) => {
-  return fetch(`http://${hostname}:${port}/register`, {
-    method: 'post',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+const registerService = async ({ hostname, port, serviceInfos }) => {
+  const bakeryURL = `http://${hostname}:${port}/register`
+  const response = await fetch(bakeryURL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(serviceInfos),
-  }).then(res => res.json())
+  })
+  const value = await response.json()
+  return value
 }
 
-const pingResponse = (uuid) => ({
+const pingResponse = uuid => ({
   statusCode: 200,
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify(uuid)
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(uuid),
 })
 
 const generateServiceAPIHelp = value => {
@@ -35,15 +34,15 @@ const generateServiceAPI = ({ type, value }) => {
 }
 
 const generateServicesAPI = interfaces => {
-  return Object.entries(interfaces).reduce((acc, [ serviceName, interf ]) => {
+  return Object.entries(interfaces).reduce((acc, [ serviceName, interface_ ]) => {
     return {
       ...acc,
-      [serviceName]: generateServiceAPI(interf),
+      [serviceName]: generateServiceAPI(interface_),
     }
   }, {})
 }
 
-const pingOrHandle = (glob, handler, request) => (uuid) => {
+const pingOrHandle = (glob, handler, request) => uuid => {
   const { url, body } = request
   if (url.pathname === '/heartbeat') {
     if (body !== glob.interfaces) {
@@ -58,31 +57,31 @@ const pingOrHandle = (glob, handler, request) => (uuid) => {
   }
 }
 
-const responseError = (error) => {
+const responseError = error => {
   console.error(error)
   return {
     statusCode: 500,
-    body: 'Unable to register to Registry.'
+    body: 'Unable to register to Registry.',
   }
 }
 
-const responsePingOrHandle = (registering) => {
+const responsePingOrHandle = registering => {
   const glob = {
     interfaces: {},
     services: {},
   }
-  return (handler) => (request) => {
+  return handler => request => {
     return registering
       .then(pingOrHandle(glob, handler, request))
       .catch(responseError)
   }
 }
 
-const register = (options) => {
+const register = options => {
   const registering = registerService(options)
   return responsePingOrHandle(registering)
 }
 
 module.exports = {
-  register
+  register,
 }
