@@ -49,15 +49,30 @@ const groupByPrefix = unifiedPaths => {
   }, {})
 }
 
-const generateFetchFunction = (method, prefix) => options => {
-  const url = '/' + prefix.join('/')
+const extractFirstInstanceURL = instances => {
+  if (instances.length === 0) {
+    throw new Error('No instances… We shouldn’t be there. Probably a problem with the Bakery.')
+  } else {
+    const { address } = instances[0]
+    if (address.startsWith('http')) {
+      return address
+    } else {
+      return `http://${address}`
+    }
+  }
+}
+
+const generateFetchFunction = (method, instances, prefix) => options => {
+  const baseURL = extractFirstInstanceURL(instances)
+  const endPath = prefix.join('/')
+  const url = `${baseURL}/${endPath}`
   return fetch(url, { ...options, method })
 }
 
-const generateFetchFunctions = (methods, prefix) => {
+const generateFetchFunctions = (methods, instances, prefix) => {
   const verbs = [...methods].map(verb => verb.toLowerCase())
   return verbs.reduce((acc, verb) => {
-    return { ...acc, [verb]: generateFetchFunction(verb, prefix) }
+    return { ...acc, [verb]: generateFetchFunction(verb, instances, prefix) }
   }, {})
 }
 
@@ -71,30 +86,30 @@ const generateFetchPath = (fetchPath, input, segment) => {
   }
 }
 
-const generateFunctionsInterface = (groupedByPrefix, fetchPath = []) => {
+const generateFunctionsInterface = (groupedByPrefix, instances, fetchPath = []) => {
   return Object.entries(groupedByPrefix).reduce((acc, [segment, methods]) => {
     if (segment === '') {
-      const functions = generateFetchFunctions(methods, fetchPath)
+      const functions = generateFetchFunctions(methods, instances, fetchPath)
       return { ...acc, ...functions }
     } else {
       return { ...acc, [segment.replace(/^:/, '')]: input => {
         const finalFetchPath = generateFetchPath(fetchPath, input, segment)
-        return generateFunctionsInterface(methods, finalFetchPath)
+        return generateFunctionsInterface(methods, instances, finalFetchPath)
       } }
     }
   }, {})
 }
 
-const generateServiceAPIHelp = restInterface => {
+const generateServiceAPIHelp = (restInterface, instances) => {
   const unifiedPaths = unifyPaths(restInterface)
   const groupedByPrefix = groupByPrefix(unifiedPaths)
-  const finalInterface = generateFunctionsInterface(groupedByPrefix)
+  const finalInterface = generateFunctionsInterface(groupedByPrefix, instances)
   return finalInterface
 }
 
-const generateServiceAPI = ({ type, value }) => {
+const generateServiceAPI = ({ type, value, instances }) => {
   switch(type) {
-    case 'REST': return generateServiceAPIHelp(value)
+    case 'REST': return generateServiceAPIHelp(value, instances)
     case 'GraphQL': return {}
     default: return {}
   }
