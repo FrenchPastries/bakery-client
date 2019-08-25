@@ -86,13 +86,26 @@ const generateFetchPath = (fetchPath, input, segment) => {
   }
 }
 
+function camelize(text) {
+  return text.replace(/^([A-Z])|[\s-_]+(\w)/g, function(match, p1, p2) {
+    if (p2) {
+      return p2.toUpperCase()
+    }
+    return p1.toLowerCase()
+  })
+}
+
+const camelizeSegment = segment => {
+  return camelize(segment.replace(/^:/, ''))
+}
+
 const generateFunctionsInterface = (groupedByPrefix, instances, fetchPath = []) => {
   return Object.entries(groupedByPrefix).reduce((acc, [segment, methods]) => {
     if (segment === '') {
       const functions = generateFetchFunctions(methods, instances, fetchPath)
       return { ...acc, ...functions }
     } else {
-      return { ...acc, [segment.replace(/^:/, '')]: input => {
+      return { ...acc, [camelizeSegment(segment)]: input => {
         const finalFetchPath = generateFetchPath(fetchPath, input, segment)
         return generateFunctionsInterface(methods, instances, finalFetchPath)
       } }

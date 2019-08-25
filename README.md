@@ -1,6 +1,6 @@
 # Bakery-client
 
-To register on a `@FrenchPastries/bakery`.
+To register on a [`@FrenchPastries/bakery`](https://github.com/FrenchPastries/bakery).
 
 # Getting Started
 
@@ -34,23 +34,44 @@ Service should send a json interface when registering:
 
 ```javascript
 const MilleFeuille = require('@frenchpastries/millefeuille')
+const { get, ...Assemble } = require('@frenchpastries/assemble')
 const client = require('@frenchpastries/customer')
-
-// The uuid given by the bakery to this instance of client.
-
-const serviceInfos = ''
-
-const bakeryMiddleware = client.register({
-  hostname: process.env.REGISTRY_HOST,
-  port: process.env.REGISTRY_PORT,
-  serviceInfos,
-})
 
 const allRoutes = Assemble.routes([
   get('/', () => ({ statusCode: 200 })),
 ])
 
+const bakeryMiddleware = client.register({
+  hostname: process.env.REGISTRY_HOST,
+  port: process.env.REGISTRY_PORT,
+  serviceInfos: allRoutes.exportRoutes(),
+})
+
 MilleFeuille.create(
   bakeryMiddleware(allRoutes)
 )
 ```
+
+## Calling an external service
+
+Let’s imagine you have two services connected to your Bakery, like a payment service, and data management service. You’re building the data management service, but, dammit, you need to ask the payment service to verify the credit card number given by the user.  
+That’s fine, you planned all of this, and created the payment service using MilleFeuille and Assemble. Cool, moreover you registered the service using customer in both case. Perfect!
+
+The API for the payment service is like this:
+
+```javascript
+const allRoutes = Assemble.routes([
+  get('/credit-card/:number/check', handler),
+])
+```
+
+You can just do this:
+
+```javascript
+const myHandler = async request => {
+  const response = await request.services.Payment.creditCard().number('0000000000000000').check().get()
+  // Do your stuff.
+}
+```
+
+Under the hood, `node-fetch` is used, so you can expect to use the exact same API as fetch!
