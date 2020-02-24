@@ -1,15 +1,6 @@
 const fetch = require('node-fetch')
 
-const registerService = async ({ hostname, port, serviceInfos }) => {
-  const bakeryURL = `http://${hostname}:${port}/register`
-  const response = await fetch(bakeryURL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(serviceInfos),
-  })
-  const value = await response.json()
-  return value
-}
+const RegisterService = require('./RegisterService')
 
 const pingResponse = uuid => ({
   statusCode: 200,
@@ -19,7 +10,11 @@ const pingResponse = uuid => ({
 
 const warnForEmptySegment = (input, key, prefix) => {
   if (!input && process.env.NODE_ENV !== 'production') {
-    console.warn(`[Customer]: You didn’t provide a variable for "${key}" segment path. This would create unexpected behavior on the server. We used "${key}" to fill the empty segment. For information, it’s on the "/${prefix.join('/')}/:${key}" path.`)
+    console.warn(
+      `[Customer]: You didn’t provide a variable for "${key}" segment path. This would create unexpected behavior on the server. We used "${key}" to fill the empty segment. For information, it’s on the "/${prefix.join(
+        '/'
+      )}/:${key}" path.`
+    )
   }
 }
 
@@ -38,7 +33,8 @@ const constructVerb = (verbs, splitted, acc = {}) => {
   } else {
     const segment = splitted[0]
     const methods = acc[segment] || {}
-    return { ...acc, [segment]: constructVerb(verbs, splitted.slice(1), methods) }
+    const verb = constructVerb(verbs, splitted.slice(1), methods)
+    return { ...acc, [segment]: verb }
   }
 }
 
@@ -51,7 +47,9 @@ const groupByPrefix = unifiedPaths => {
 
 const extractFirstInstanceURL = instances => {
   if (instances.length === 0) {
-    throw new Error('No instances… We shouldn’t be there. Probably a problem with the Bakery.')
+    const errorMessage =
+      'No instances… We shouldn’t be there. Probably a problem with the Bakery.'
+    throw new Error(errorMessage)
   } else {
     const { address } = instances[0]
     if (address.startsWith('http')) {
@@ -99,16 +97,19 @@ const camelizeSegment = segment => {
   return camelize(segment.replace(/^:/, ''))
 }
 
-const generateFunctionsInterface = (groupedByPrefix, instances, fetchPath = []) => {
+const genFunctionsInterface = (groupedByPrefix, instances, fetchPath = []) => {
   return Object.entries(groupedByPrefix).reduce((acc, [segment, methods]) => {
     if (segment === '') {
       const functions = generateFetchFunctions(methods, instances, fetchPath)
       return { ...acc, ...functions }
     } else {
-      return { ...acc, [camelizeSegment(segment)]: input => {
-        const finalFetchPath = generateFetchPath(fetchPath, input, segment)
-        return generateFunctionsInterface(methods, instances, finalFetchPath)
-      } }
+      return {
+        ...acc,
+        [camelizeSegment(segment)]: input => {
+          const finalFetchPath = generateFetchPath(fetchPath, input, segment)
+          return genFunctionsInterface(methods, instances, finalFetchPath)
+        },
+      }
     }
   }, {})
 }
@@ -116,15 +117,18 @@ const generateFunctionsInterface = (groupedByPrefix, instances, fetchPath = []) 
 const generateServiceAPIHelp = (restInterface, instances) => {
   const unifiedPaths = unifyPaths(restInterface)
   const groupedByPrefix = groupByPrefix(unifiedPaths)
-  const finalInterface = generateFunctionsInterface(groupedByPrefix, instances)
+  const finalInterface = genFunctionsInterface(groupedByPrefix, instances)
   return finalInterface
 }
 
 const generateServiceAPI = ({ type, value, instances }) => {
-  switch(type) {
-    case 'REST': return generateServiceAPIHelp(value, instances)
-    case 'GraphQL': return {}
-    default: return {}
+  switch (type) {
+    case 'REST':
+      return generateServiceAPIHelp(value, instances)
+    case 'GraphQL':
+      return {}
+    default:
+      return {}
   }
 }
 
@@ -134,7 +138,7 @@ const generateServicesAPI = interfaces => {
   }, {})
 }
 
-const pingOrHandle = (glob, handler, request) => uuid => {
+const pingOrHandle = (glob, handler, request, uuid) => {
   const { url, body } = request
   if (url.pathname === '/heartbeat') {
     if (body !== glob.interfaces) {
@@ -157,21 +161,23 @@ const responseError = error => {
   }
 }
 
-const responsePingOrHandle = registering => {
+const responsePingOrHandle = registryService => {
   const glob = {
     interfaces: {},
     services: {},
   }
   return handler => request => {
-    return registering
-      .then(pingOrHandle(glob, handler, request))
-      .catch(responseError)
+    if (registryService.isConnected()) {
+      return pingOrHandle(glob, handler, request, registryService.uuid())
+    } else {
+      return responseError('Disconnected')
+    }
   }
 }
 
 const register = options => {
-  const registering = registerService(options)
-  return responsePingOrHandle(registering)
+  const registryService = new RegisterService(options)
+  return responsePingOrHandle(registryService)
 }
 
 module.exports = {
