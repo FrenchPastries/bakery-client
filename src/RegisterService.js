@@ -21,7 +21,7 @@ class RegisterService {
     } catch (error) {
       console.error(error)
       console.error('Unable to connect to Bakery. Will retry in 5s.')
-      setTimeout(this.connect, 5000)
+      setTimeout(() => this.connect(), 5000)
     }
   }
 
