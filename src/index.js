@@ -147,9 +147,13 @@ const pingOrHandle = (glob, handler, request, uuid) => {
     }
     return pingResponse(uuid)
   } else {
-    const services = glob.services
-    const newRequest = { ...request, services }
-    return handler(newRequest)
+    if (Object.keys(glob.services).length === 0) {
+      return { statusCode: 500 }
+    } else {
+      const services = glob.services
+      const newRequest = { ...request, services }
+      return handler(newRequest)
+    }
   }
 }
 
