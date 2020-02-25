@@ -2,6 +2,9 @@ const fetch = require('node-fetch')
 
 const RegisterService = require('./RegisterService')
 
+const GRAPHQL = 'GraphQL'
+const REST = 'REST'
+
 const pingResponse = uuid => ({
   statusCode: 200,
   headers: { 'Content-Type': 'application/json' },
@@ -123,9 +126,9 @@ const generateServiceAPIHelp = (restInterface, instances) => {
 
 const generateServiceAPI = ({ type, value, instances }) => {
   switch (type) {
-    case 'REST':
+    case REST:
       return generateServiceAPIHelp(value, instances)
-    case 'GraphQL':
+    case GRAPHQL:
       return {}
     default:
       return {}
@@ -186,4 +189,8 @@ const register = options => {
 
 module.exports = {
   register,
+  constants: {
+    GRAPHQL,
+    REST,
+  }
 }
