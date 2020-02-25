@@ -1,9 +1,27 @@
 const fetch = require('node-fetch')
+const path = require('path')
+const fs = require('fs')
+
+const { HOSTNAME, PORT } = process.env
+
+const correctServiceInfos = serviceInfos => {
+  const { name, version } = JSON.parse(fs.readFileSync(
+    path.resolve(process.cwd(), 'package.json'),
+    'utf8'
+  ))
+  return {
+    name: serviceInfos.name || name,
+    version: serviceInfos.version || version,
+    state: serviceInfos.state || 'Not defined',
+    address: serviceInfos.address || `${HOSTNAME}:${PORT}`,
+    interface: serviceInfos.interface,
+  }
+}
 
 class RegisterService {
   constructor({ hostname, port, serviceInfos }) {
     this.state = 'disconnected'
-    this.serviceInfos = JSON.stringify(serviceInfos)
+    this.serviceInfos = JSON.stringify(correctServiceInfos(serviceInfos))
     this.bakeryURL = `http://${hostname}:${port}/register`
     this.connect()
   }
