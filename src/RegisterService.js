@@ -4,13 +4,17 @@ const fs = require('fs')
 
 const { HOSTNAME, PORT } = process.env
 
+const lastPart = name => {
+  return name.split('/').pop()
+}
+
 const correctServiceInfos = serviceInfos => {
   const { name, version } = JSON.parse(fs.readFileSync(
     path.resolve(process.cwd(), 'package.json'),
     'utf8'
   ))
   return {
-    name: serviceInfos.name || name,
+    name: serviceInfos.name || lastPart(name),
     version: serviceInfos.version || version,
     state: serviceInfos.state || 'Not defined',
     address: serviceInfos.address || `${HOSTNAME}:${PORT}`,
