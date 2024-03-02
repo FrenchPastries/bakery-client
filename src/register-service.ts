@@ -77,11 +77,13 @@ export class RegisterService {
     const version = serviceInfos.version ?? pjsonVersion
     if (!name) throw new Error('No name found in package.json or infos')
     if (!version) throw new Error('No version found in package.json or infos')
+    if (!serviceInfos.address && !HOSTNAME) throw new Error('No hostname found')
     return {
       name,
       version,
       state: this.#state,
-      address: serviceInfos.address ?? `${HOSTNAME}:${PORT}`,
+      address: serviceInfos.address ?? HOSTNAME!,
+      port: serviceInfos.port ?? PORT,
       interface: serviceInfos.interface,
     }
   }

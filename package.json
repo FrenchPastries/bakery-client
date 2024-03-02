@@ -6,7 +6,7 @@
   "scripts": {
     "prepare": "tsc",
     "build": "tsc",
-    "test:server": "nodemon test/main.ts"
+    "test:server": "NODE_ENV=development nodemon test/main.ts"
   },
   "authors": [
     "Guillaume Hivert <hivert.is.coming@gmail.com>",
@@ -17,11 +17,13 @@
     "/dist"
   ],
   "dependencies": {
-    "@frenchpastries/millefeuille": "^1.0.2"
+    "@frenchpastries/millefeuille": "^1.0.2",
+    "dns2": "^2.1.0"
   },
   "devDependencies": {
     "@frenchpastries/assemble": "^1.0.1",
-    "@frenchpastries/bakery": "^0.4.5",
+    "@frenchpastries/bakery": "^0.5.1",
+    "@types/dns2": "^2.0.9",
     "@types/node": "^20.11.24",
     "nodemon": "^3.1.0",
     "prettier": "^3.2.5",

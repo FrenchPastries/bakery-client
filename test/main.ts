@@ -25,7 +25,8 @@ const allRoutes = assemble.routes([
 ])
 
 const serviceInfos = {
-  address: `${os.networkInterfaces().en0![1].address}:${port}`,
+  port,
+  address: `${os.networkInterfaces().en0![1].address}`,
   interface: {
     type: 'REST',
     value: allRoutes.export(),
@@ -39,21 +40,20 @@ const bakery = register({
 })
 
 millefeuille.create(
-  bakery((request: any) => {
-    console.log('services: ', request.services)
+  bakery.middleware(async (request: any) => {
+    console.log('services: ', bakery.services)
     return allRoutes(request)
   }),
-  {
-    port,
-  }
+  { port }
 )
 
-setInterval(() => {
+setInterval(async () => {
   fetch('http://localhost:12345')
-    .then(() => {
-      console.log('ok')
-    })
+    .then(() => console.log('ok'))
     .catch(console.log)
+  // @ts-ignore
+  const response = await bakery.services.customer.get()
+  console.log(response)
 }, 5000)
 
 console.log(`-----> Server started on port ${port}.`)

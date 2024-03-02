@@ -19,14 +19,15 @@
   resolved "https://registry.yarnpkg.com/@frenchpastries/assemble/-/assemble-1.0.1.tgz#c821756da0026388772639a10f6681caf85cfb43"
   integrity sha512-WZmSjGot2hEBXI5heY25qnC+IKBFkv0OdjZ8lvawf8Ouhvi9YvJNq0kD7b5ji6sOfb3sN836TGGQMA5hOm8VBg==
 
-"@frenchpastries/bakery@^0.4.5":
-  version "0.4.5"
-  resolved "https://registry.yarnpkg.com/@frenchpastries/bakery/-/bakery-0.4.5.tgz#94066e050f95a596d32365ded171b7526e0dde01"
-  integrity sha512-MbPgk+HRnqFen7kHmUHLhfVXdXNctGleGTFA6q8Eyx5HwBO2/xatpfZGj3fEycVjLhpCffRhVhuJV/Om6K6Llw==
+"@frenchpastries/bakery@^0.5.1":
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/@frenchpastries/bakery/-/bakery-0.5.1.tgz#d39a9c58d75c8d4fc888e5ee0e59e5714aa0eefb"
+  integrity sha512-mGGRiMrwTK7Noi6yz7Jyv5Mh9uFs/82m4Jwj5/XuOM5cvo+4ws27qZ4Svm516PBauW5nUFoDqYrbqxGbi7msNQ==
   dependencies:
     "@frenchpastries/arrange" "^1.0.1"
     "@frenchpastries/assemble" "^1.0.1"
     "@frenchpastries/millefeuille" "^1.0.2"
+    dns2 "^2.1.0"
     joi "^17.12.2"
     uuid "^9.0.1"
 
@@ -102,7 +103,14 @@
   resolved "https://registry.yarnpkg.com/@tsconfig/node16/-/node16-1.0.4.tgz#0b92dcc0cc1c81f6f306a381f28e31b1a56536e9"
   integrity sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==
 
-"@types/node@^20.11.24":
+"@types/dns2@^2.0.9":
+  version "2.0.9"
+  resolved "https://registry.yarnpkg.com/@types/dns2/-/dns2-2.0.9.tgz#96aa1a55827c1f523e917edfa40e4fb9fe8b102a"
+  integrity sha512-+eiPSuo/KfvaaW7DiMf/vrt9mhxbZCCgxoCa/c2qMVSuZQus4BzBuKRh8XBwcUXWAtvI8QuZOp13UODJNq9DXg==
+  dependencies:
+    "@types/node" "*"
+
+"@types/node@*", "@types/node@^20.11.24":
   version "20.11.24"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-20.11.24.tgz#cc207511104694e84e9fb17f9a0c4c42d4517792"
   integrity sha512-Kza43ewS3xoLgCEpQrsT+xRo/EJej1y0kVYGiLFE1NEODXGzTfwiC6tXTLMQskn1X4/Rjlh0MQUvx9W+L9long==
@@ -198,6 +206,11 @@ diff@^4.0.1:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/diff/-/diff-4.0.2.tgz#60f3aecb89d5fae520c11aa19efc2bb982aade7d"
   integrity sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==
+
+dns2@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/dns2/-/dns2-2.1.0.tgz#15b07567befb2b914aedbb55a9ea0862c63c3d73"
+  integrity sha512-m27K11aQalRbmUs7RLaz6aPyceLjAoqjPRNTdE7qUouQpl+PC8Bi67O+i9SuJUPbQC8dxFrczAxfmTPuTKHNkw==
 
 fill-range@^7.0.1:
   version "7.0.1"
