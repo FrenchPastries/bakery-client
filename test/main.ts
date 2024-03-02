@@ -1,8 +1,7 @@
 import * as millefeuille from '@frenchpastries/millefeuille'
 import { response } from '@frenchpastries/millefeuille/response'
 import * as assemble from '@frenchpastries/assemble'
-// @ts-ignore
-import { register } from '../src'
+import * as customer from '../src/customer'
 import * as os from 'os'
 
 const port = 12345
@@ -21,27 +20,15 @@ const allRoutes = assemble.routes([
   assemble.get('/test3', async () => ({ statusCode: 200, body: 'OK' })),
   assemble.get('/test3/test-test', async () => response('OK')),
   assemble.get('/test3/testtest/testtest', async () => response('OK')),
+  assemble.del('/', async () => response('OK')),
   assemble.notFound(async () => ({ statusCode: 404 })),
 ])
 
-const serviceInfos = {
-  port,
-  address: `${os.networkInterfaces().en0![1].address}`,
-  interface: {
-    type: 'REST',
-    value: allRoutes.export(),
-  },
-} as const
-
-const bakery = register({
-  hostname: 'localhost',
-  port: 8080,
-  serviceInfos,
-})
+const customer_ = customer.register({ router: allRoutes })
 
 millefeuille.create(
-  bakery.middleware(async (request: any) => {
-    console.log('services: ', bakery.services)
+  customer_.middleware(async (request: any) => {
+    console.log('services: ', customer_.services)
     return allRoutes(request)
   }),
   { port }
@@ -51,9 +38,9 @@ setInterval(async () => {
   fetch('http://localhost:12345')
     .then(() => console.log('ok'))
     .catch(console.log)
-  // @ts-ignore
-  const response = await bakery.services.customer.get()
-  console.log(response)
+  console.log(customer_.services)
+  const response = await customer_.services.customer.get()
+  console.log(await response.text())
 }, 5000)
 
 console.log(`-----> Server started on port ${port}.`)

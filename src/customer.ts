@@ -11,9 +11,16 @@ export const REST = 'REST'
 
 type UnifiedPaths = { [path: string]: Set<string> }
 type AllPaths = { [pathSegment: string]: AllPaths | Set<string> }
-type Fetcher = (options: Omit<RequestInit, 'method'>) => Promise<Response>
-type Fetchers = { [method: string]: Fetcher }
-type ServicesRequests = { [segmentOrMethod: string]: (() => ServicesRequests) | Fetcher }
+type Fetcher = (options?: Omit<RequestInit, 'method'>) => Promise<Response>
+type Fetchers = {
+  get?: Fetcher
+  post?: Fetcher
+  put?: Fetcher
+  patch?: Fetcher
+  delete?: Fetcher
+  options?: Fetcher
+}
+type ServicesRequests = { [segmentOrMethod: string]: any }
 
 const warnForEmptySegment = (prefix: string[], key: string, input?: string | number) => {
   if (!input && process.env.NODE_ENV === 'development') {
@@ -72,7 +79,7 @@ class Customer {
     this.#apis = ''
     this.#dnsClient = new DNS({
       nameServers: ['localhost'],
-      port: options.port + 1,
+      port: (options.bakery?.port ?? 8080) + 1,
       recursive: false,
     })
   }

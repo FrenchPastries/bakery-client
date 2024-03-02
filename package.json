@@ -2,11 +2,11 @@
   "name": "@frenchpastries/customer",
   "version": "0.2.2",
   "description": "Middleware to auto-register a service to a Bakery",
-  "main": "dist/index.js",
+  "main": "dist/customer.js",
   "scripts": {
     "prepare": "tsc",
     "build": "tsc",
-    "test:server": "NODE_ENV=development nodemon test/main.ts"
+    "test:server": "NODE_ENV=development PORT=12345 nodemon test/main.ts"
   },
   "authors": [
     "Guillaume Hivert <hivert.is.coming@gmail.com>",

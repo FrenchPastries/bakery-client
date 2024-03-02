@@ -1,8 +1,7 @@
 import type { Service } from '@frenchpastries/bakery'
 import type { Options, ServiceInfos } from './types'
 import * as helpers from './helpers'
-
-const { HOSTNAME, PORT } = process.env
+import * as os from 'os'
 
 // Because package.json names can be @org/package-name.
 export const lastNamePart = (name?: string) => name?.split('/').pop()
@@ -16,7 +15,14 @@ export class RegisterService {
   #cpuLoadIntervalId?: NodeJS.Timeout
   #connectionIntervalId?: NodeJS.Timeout
 
-  constructor({ hostname, port, serviceInfos }: Options) {
+  constructor(options: Options = {}) {
+    const hostname = options.bakery?.hostname ?? 'localhost'
+    const port = options.bakery?.port ?? 8080
+    const customerPort: number | undefined = options.port ?? (process.env.PORT ? +process.env.PORT : undefined)
+    if (!options.router && !options.interface) throw new Error('Pass router or interface to customer.')
+    if (!customerPort) throw new Error('Port should be defined through options or process.env.PORT.')
+    const interface_ = options.interface ?? { type: 'REST', value: options.router!.export() }
+    const serviceInfos: ServiceInfos = { interface: interface_, port: customerPort }
     this.#serviceInfos = JSON.stringify(this.#correctServiceInfos(serviceInfos))
     this.#bakeryURL = `http://${hostname}:${port}/register`
   }
@@ -75,15 +81,16 @@ export class RegisterService {
     const pjsonVersion = pjsonContent.version as string | undefined
     const name = serviceInfos.name ?? lastNamePart(pjsonName)
     const version = serviceInfos.version ?? pjsonVersion
+    const address = serviceInfos.address ?? `${os.networkInterfaces().en0![1].address}`
     if (!name) throw new Error('No name found in package.json or infos')
     if (!version) throw new Error('No version found in package.json or infos')
-    if (!serviceInfos.address && !HOSTNAME) throw new Error('No hostname found')
+    if (!address) throw new Error('No address found')
     return {
       name,
       version,
       state: this.#state,
-      address: serviceInfos.address ?? HOSTNAME!,
-      port: serviceInfos.port ?? PORT,
+      address,
+      port: serviceInfos.port,
       interface: serviceInfos.interface,
     }
   }
