@@ -2,17 +2,33 @@
   "name": "@frenchpastries/customer",
   "version": "0.2.2",
   "description": "Middleware to auto-register a service to a Bakery",
-  "main": "src/index.js",
-  "scripts": {},
-  "author": "Arthur Escriou <arthur.escriou@gmail.com>",
+  "main": "dist/index.js",
+  "scripts": {
+    "prepare": "tsc",
+    "build": "tsc",
+    "test:server": "nodemon test/main.ts"
+  },
+  "authors": [
+    "Guillaume Hivert <hivert.is.coming@gmail.com>",
+    "Arthur Escriou <arthur.escriou@gmail.com>"
+  ],
   "license": "MIT",
   "files": [
-    "/src"
+    "/dist"
   ],
   "dependencies": {
-    "node-fetch": "^2.3.0"
+    "@frenchpastries/millefeuille": "^1.0.2"
   },
   "devDependencies": {
-    "eslint": "^5.16.0"
+    "@frenchpastries/assemble": "^1.0.1",
+    "@frenchpastries/bakery": "^0.4.5",
+    "@types/node": "^20.11.24",
+    "nodemon": "^3.1.0",
+    "prettier": "^3.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
