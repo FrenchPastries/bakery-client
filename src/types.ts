@@ -15,4 +15,5 @@ export type Options = {
   port?: number
   interface?: Interface
   router?: Router
+  autoconnect?: boolean
 }

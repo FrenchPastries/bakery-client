@@ -27,13 +27,13 @@ export class RegisterService {
     this.#bakeryURL = `http://${hostname}:${port}/register`
   }
 
-  register() {
-    if (this.#connectionIntervalId) return
+  async register() {
+    if (this.#connectionIntervalId) return this
     const updateComputeLoad = () => (this.#state = helpers.cpus.computeLoad())
     const connect = () => !this.isConnected && this.#connect()
     this.#cpuLoadIntervalId = setInterval(updateComputeLoad, 5000)
     this.#connectionIntervalId = setInterval(connect, 5000)
-    connect()
+    await connect()
     updateComputeLoad()
     return this
   }

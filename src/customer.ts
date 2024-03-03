@@ -76,11 +76,13 @@ class Customer {
   #services: Services
   #apis: string
   #dnsClient: DNS
+  #autoconnect: boolean
 
   constructor(registryService: RegisterService, options: Options) {
     this.#registryService = registryService
     this.#services = {}
     this.#apis = ''
+    this.#autoconnect = options.autoconnect ?? true
     this.#dnsClient = new DNS({
       nameServers: ['localhost'],
       port: (options.bakery?.port ?? 8080) + 1,
@@ -183,11 +185,18 @@ class Customer {
     return this.#services
   }
 
+  async connect() {
+    await this.#registryService.register()
+    return this
+  }
+
   middleware: assemble.Middleware = (handler) => {
-    this.#registryService.register()
+    if (this.#autoconnect) this.connect()
     return async (request) => {
       if (this.#registryService.isConnected) {
         return this.#pingOrHandle(handler, request)
+      } else if (!this.#autoconnect) {
+        return handler(request)
       } else {
         console.error('Disconnected')
         return internalError('Unable to register to Registry')
@@ -196,7 +205,7 @@ class Customer {
   }
 }
 
-export const register = (options: Options) => {
+export const register = (options: Options): Customer => {
   const registryService = new RegisterService(options)
   const customer = new Customer(registryService, options)
   return customer
