@@ -20,7 +20,11 @@ type Fetchers = {
   delete?: Fetcher
   options?: Fetcher
 }
-type ServicesRequests = { [segmentOrMethod: string]: any }
+
+export namespace Services {
+  export interface Requests {}
+  export interface Services {}
+}
 
 const warnForEmptySegment = (prefix: string[], key: string, input?: string | number) => {
   if (!input && process.env.NODE_ENV === 'development') {
@@ -69,7 +73,7 @@ const groupByPrefix = (unifiedPaths: UnifiedPaths) => {
 
 class Customer {
   #registryService: RegisterService
-  #services: { [serviceName: string]: ServicesRequests }
+  #services: Services.Services
   #apis: string
   #dnsClient: DNS
 
@@ -122,8 +126,8 @@ class Customer {
     groupedByPrefix: AllPaths,
     serviceName: string,
     fetchPath: string[] = []
-  ): ServicesRequests => {
-    const init: ServicesRequests = {}
+  ): { [segmentOrMethod: string]: any } => {
+    const init: { [segmentOrMethod: string]: any } = {}
     return Object.entries(groupedByPrefix).reduce((acc, [segment, methods]) => {
       if (segment === '') {
         const meths = methods as Set<string>
@@ -161,7 +165,7 @@ class Customer {
     if (request.body !== this.#apis) {
       this.#apis = request.body
       const heartbeats: Heartbeats = JSON.parse(this.#apis)
-      const init: { [serviceName: string]: ServicesRequests } = {}
+      const init: { [serviceName: string]: Services.Requests } = {}
       this.#services = Object.entries(heartbeats).reduce((acc, [serviceName, heartbeat]) => {
         return { ...acc, [serviceName]: this.#generateServiceAPI(heartbeat) }
       }, init)
