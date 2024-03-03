@@ -12,6 +12,7 @@ export const REST = 'REST'
 type UnifiedPaths = { [path: string]: Set<string> }
 type AllPaths = { [pathSegment: string]: AllPaths | Set<string> }
 type Fetcher = (options?: Omit<RequestInit, 'method'>) => Promise<Response>
+
 type Fetchers = {
   get?: Fetcher
   post?: Fetcher
@@ -21,9 +22,8 @@ type Fetchers = {
   options?: Fetcher
 }
 
-export namespace Services {
-  export interface Requests {}
-  export interface Services {}
+export interface Services {
+  [serviceName: string]: any
 }
 
 const warnForEmptySegment = (prefix: string[], key: string, input?: string | number) => {
@@ -73,7 +73,7 @@ const groupByPrefix = (unifiedPaths: UnifiedPaths) => {
 
 class Customer {
   #registryService: RegisterService
-  #services: Services.Services
+  #services: Services
   #apis: string
   #dnsClient: DNS
 
@@ -165,7 +165,7 @@ class Customer {
     if (request.body !== this.#apis) {
       this.#apis = request.body
       const heartbeats: Heartbeats = JSON.parse(this.#apis)
-      const init: { [serviceName: string]: Services.Requests } = {}
+      const init: { [serviceName: string]: {} } = {}
       this.#services = Object.entries(heartbeats).reduce((acc, [serviceName, heartbeat]) => {
         return { ...acc, [serviceName]: this.#generateServiceAPI(heartbeat) }
       }, init)
