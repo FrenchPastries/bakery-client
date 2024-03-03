@@ -1,6 +1,6 @@
 {
   "name": "@frenchpastries/customer",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Middleware to auto-register a service to a Bakery",
   "main": "dist/customer.js",
   "scripts": {
