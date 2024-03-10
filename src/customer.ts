@@ -10,8 +10,8 @@ import DNS from 'dns2'
 export const REST = 'REST'
 
 type UnifiedPaths = { [path: string]: Set<string> }
-type AllPaths = { [pathSegment: string]: AllPaths | Set<string> }
-type Fetcher = (options?: Omit<RequestInit, 'method'>) => Promise<Response>
+export type Fetcher = (options?: Omit<RequestInit, 'method'>) => Promise<Response>
+export type Paths = { [pathSegment: string]: Paths | Set<string> }
 
 type Fetchers = {
   get?: Fetcher
@@ -46,13 +46,13 @@ const unifyPaths = (restInterface: Interface['value']): UnifiedPaths => {
   }, init)
 }
 
-const constructMethod = (methods: Set<string>, splitted: string[], acc: AllPaths): AllPaths | Set<string> => {
+const constructMethod = (methods: Set<string>, splitted: string[], acc: Paths): Paths | Set<string> => {
   if (splitted.length === 0) return methods
   const segment = splitted[0]
   // The only case where the value of internalSegments is Set<string> is when
   //  segments === ''. Thus, it marks the end of splitted, and will return the
   //  methods in the next recursive call.
-  const internalSegments = (acc[segment] ?? {}) as AllPaths
+  const internalSegments = (acc[segment] ?? {}) as Paths
   const method = constructMethod(methods, splitted.slice(1), internalSegments)
   return { ...acc, [segment]: method }
 }
@@ -67,8 +67,8 @@ const generateFetchPath = (fetchPath: string[], segment: string, input?: string 
 const groupByPrefix = (unifiedPaths: UnifiedPaths) => {
   return Object.entries(unifiedPaths).reduce((acc, [path, methods]) => {
     const splitted = path.slice(1).split('/')
-    return constructMethod(methods, splitted, acc) as AllPaths
-  }, {} as AllPaths)
+    return constructMethod(methods, splitted, acc) as Paths
+  }, {} as Paths)
 }
 
 class Customer {
@@ -139,7 +139,7 @@ class Customer {
   }
 
   #genFunctionsInterface = (
-    groupedByPrefix: AllPaths,
+    groupedByPrefix: Paths,
     serviceName: string,
     fetchPath: string[] = []
   ): { [segmentOrMethod: string]: any } => {
@@ -150,7 +150,7 @@ class Customer {
         const functions = this.#generateFetcher(meths, serviceName, fetchPath)
         return { ...acc, ...functions }
       } else {
-        const meths = methods as AllPaths
+        const meths = methods as Paths
         const functionName = helpers.strings.camelize(segment.replace(/^:/, ''))
         return {
           ...acc,
@@ -238,8 +238,23 @@ class Customer {
   }
 }
 
+/** Register a service to a bakery, and provides an object containing
+ * the services and the middleware. */
 export const register = (options: Options): Customer => {
   const registryService = new RegisterService(options)
   const customer = new Customer(registryService, options)
   return customer
+}
+
+/** Read an returns the interfaces for the services connected to the bakery
+ * at the `url`. */
+export const interfaces = async (url: string) => {
+  const response = await fetch(url + '/services')
+  const apis: Heartbeats = await response.json()
+  const init: { [serviceName: string]: Paths } = {}
+  return Object.entries(apis).reduce((acc, [serviceName, { api }]) => {
+    const unifiedPaths = unifyPaths(api.value)
+    const groupedByPrefix = groupByPrefix(unifiedPaths)
+    return { ...acc, [serviceName]: groupedByPrefix }
+  }, init)
 }

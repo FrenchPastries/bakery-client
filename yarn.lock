@@ -19,10 +19,10 @@
   resolved "https://registry.yarnpkg.com/@frenchpastries/assemble/-/assemble-1.0.1.tgz#c821756da0026388772639a10f6681caf85cfb43"
   integrity sha512-WZmSjGot2hEBXI5heY25qnC+IKBFkv0OdjZ8lvawf8Ouhvi9YvJNq0kD7b5ji6sOfb3sN836TGGQMA5hOm8VBg==
 
-"@frenchpastries/bakery@^0.5.1":
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/@frenchpastries/bakery/-/bakery-0.5.1.tgz#d39a9c58d75c8d4fc888e5ee0e59e5714aa0eefb"
-  integrity sha512-mGGRiMrwTK7Noi6yz7Jyv5Mh9uFs/82m4Jwj5/XuOM5cvo+4ws27qZ4Svm516PBauW5nUFoDqYrbqxGbi7msNQ==
+"@frenchpastries/bakery@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@frenchpastries/bakery/-/bakery-0.6.0.tgz#bd17779f2e9526790fab4e9d3af265cb709589db"
+  integrity sha512-kgO25Vs5kXqcz9snUKvrWzJooIIpt1nR9bKyWrWl9zcFEYJ3+etaU9BeSbkjK9PcJeI+ewKw0E5Yhw7ra/rfRQ==
   dependencies:
     "@frenchpastries/arrange" "^1.0.1"
     "@frenchpastries/assemble" "^1.0.1"
