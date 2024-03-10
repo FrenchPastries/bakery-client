@@ -2,7 +2,6 @@ import * as millefeuille from '@frenchpastries/millefeuille'
 import { response } from '@frenchpastries/millefeuille/response'
 import * as assemble from '@frenchpastries/assemble'
 import * as customer from '../src/customer'
-import * as os from 'os'
 
 const port = 12345
 
@@ -28,7 +27,6 @@ const customer_ = customer.register({ router: allRoutes })
 
 millefeuille.create(
   customer_.middleware(async (request: any) => {
-    console.log('services: ', customer_.services)
     return allRoutes(request)
   }),
   { port }
@@ -36,11 +34,11 @@ millefeuille.create(
 
 setInterval(async () => {
   fetch('http://localhost:12345')
-    .then(() => console.log('ok'))
+    .then(() => console.log('Fetch success'))
     .catch(console.log)
-  console.log(customer_.services)
+  await customer_.ready()
   const response = await customer_.services.customer.get()
-  console.log(await response.text())
+  console.log('Customer', await response.text())
 }, 5000)
 
 console.log(`-----> Server started on port ${port}.`)

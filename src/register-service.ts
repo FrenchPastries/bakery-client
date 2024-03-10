@@ -2,11 +2,21 @@ import type { Service } from '@frenchpastries/bakery'
 import type { Options, ServiceInfos } from './types'
 import * as helpers from './helpers'
 import * as os from 'os'
+import EventEmitter from 'events'
+
+export const events = {
+  cpuLoad: 'cpu-load',
+  connected: 'connected',
+  disconnected: 'disconnected',
+  heartbeat: 'heartbeat',
+} as const
+type EventKeys = keyof typeof events
+export type Event = (typeof events)[EventKeys]
 
 // Because package.json names can be @org/package-name.
 export const lastNamePart = (name?: string) => name?.split('/').pop()
 
-export class RegisterService {
+export class RegisterService extends EventEmitter {
   #state: number[] = []
   #serviceInfos: string
   #bakeryURL: string
@@ -16,6 +26,7 @@ export class RegisterService {
   #connectionIntervalId?: NodeJS.Timeout
 
   constructor(options: Options = {}) {
+    super()
     const hostname = options.bakery?.hostname ?? 'localhost'
     const port = options.bakery?.port ?? 8080
     const customerPort: number | undefined = options.port ?? (process.env.PORT ? +process.env.PORT : undefined)
@@ -29,7 +40,10 @@ export class RegisterService {
 
   async register() {
     if (this.#connectionIntervalId) return this
-    const updateComputeLoad = () => (this.#state = helpers.cpus.computeLoad())
+    const updateComputeLoad = () => {
+      this.#state = helpers.cpus.computeLoad()
+      this.emit(events.cpuLoad, this.#state)
+    }
     const connect = () => !this.isConnected && this.#connect()
     this.#cpuLoadIntervalId = setInterval(updateComputeLoad, 5000)
     this.#connectionIntervalId = setInterval(connect, 5000)
@@ -47,6 +61,7 @@ export class RegisterService {
       })
       this.#value = await response.json()
       this.#lastHeartbeat = Date.now()
+      this.emit(events.connected)
     } catch (error) {
       console.error(error)
       console.error('Unable to connect to Bakery. Reconnection in 5s.')
@@ -55,6 +70,7 @@ export class RegisterService {
 
   updateLastHeartbeat() {
     this.#lastHeartbeat = Date.now()
+    this.emit(events.heartbeat)
     return this
   }
 
@@ -68,7 +84,9 @@ export class RegisterService {
   get isConnected() {
     if (!this.#lastHeartbeat) return false
     const current = Date.now()
-    return current - this.#lastHeartbeat < 5000
+    const state = current - this.#lastHeartbeat < 5000
+    if (!state) this.emit(events.disconnected)
+    return state
   }
 
   get uuid() {

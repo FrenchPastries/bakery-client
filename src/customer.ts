@@ -1,7 +1,7 @@
 import * as mf from '@frenchpastries/millefeuille'
 import { internalError } from '@frenchpastries/millefeuille/response'
 import * as assemble from '@frenchpastries/assemble'
-import { RegisterService } from './register-service'
+import { RegisterService, events } from './register-service'
 import { Options } from './types'
 import { Heartbeat, Heartbeats, Interface } from '@frenchpastries/bakery'
 import * as helpers from './helpers'
@@ -77,16 +77,30 @@ class Customer {
   #apis: string
   #dnsClient: DNS
   #autoconnect: boolean
+  #connectionState: Promise<boolean>
+  #unsubscribe: () => void
+  #readyWarnings: ((value: boolean) => void)[]
 
   constructor(registryService: RegisterService, options: Options) {
     this.#registryService = registryService
+    this.#connectionState = this.#setConnectionState()
+    const onDisconnected = () => (this.#connectionState = this.#setConnectionState())
+    this.#registryService.on(events.disconnected, onDisconnected)
+    this.#unsubscribe = () => this.#registryService.off(events.disconnected, onDisconnected)
     this.#services = {}
     this.#apis = ''
+    this.#readyWarnings = []
     this.#autoconnect = options.autoconnect ?? true
     this.#dnsClient = new DNS({
       nameServers: ['localhost'],
       port: (options.bakery?.port ?? 8080) + 1,
       recursive: false,
+    })
+  }
+
+  #setConnectionState() {
+    return new Promise<boolean>((resolve) => {
+      this.#registryService.once(events.connected, () => resolve(true))
     })
   }
 
@@ -172,6 +186,8 @@ class Customer {
         return { ...acc, [serviceName]: this.#generateServiceAPI(heartbeat) }
       }, init)
     }
+    this.#readyWarnings.forEach((resolve) => resolve(true))
+    this.#readyWarnings = []
     return this.#heartbeatResponse()
   }
 
@@ -190,10 +206,23 @@ class Customer {
     return this
   }
 
+  get isConnected() {
+    return this.#registryService.isConnected
+  }
+
+  async ready() {
+    const fiveSecondsWait = new Promise((_, r) => setTimeout(() => r(false), 30_000))
+    const waitForServices = () => {
+      if (Object.keys(this.#services).length > 0) return true
+      return new Promise<boolean>((resolve) => this.#readyWarnings.push(resolve))
+    }
+    return Promise.race([fiveSecondsWait, this.#connectionState.then(waitForServices)])
+  }
+
   middleware: assemble.Middleware = (handler) => {
     if (this.#autoconnect) this.connect()
     return async (request) => {
-      if (this.#registryService.isConnected) {
+      if (this.isConnected) {
         return this.#pingOrHandle(handler, request)
       } else if (!this.#autoconnect) {
         return handler(request)
@@ -202,6 +231,10 @@ class Customer {
         return internalError('Unable to register to Registry')
       }
     }
+  }
+
+  destroy() {
+    return this.#unsubscribe()
   }
 }
 
