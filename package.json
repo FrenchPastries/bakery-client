@@ -17,12 +17,12 @@
     "/dist"
   ],
   "dependencies": {
+    "@frenchpastries/bakery": "^0.6.4",
     "@frenchpastries/millefeuille": "^1.0.2",
     "dns2": "^2.1.0"
   },
   "devDependencies": {
     "@frenchpastries/assemble": "^1.0.1",
-    "@frenchpastries/bakery": "^0.6.4",
     "@types/dns2": "^2.0.9",
     "@types/node": "^20.11.24",
     "nodemon": "^3.1.0",

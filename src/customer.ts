@@ -1,3 +1,4 @@
+import { ip } from '@frenchpastries/bakery'
 import * as mf from '@frenchpastries/millefeuille'
 import { internalError } from '@frenchpastries/millefeuille/response'
 import * as assemble from '@frenchpastries/assemble'
@@ -117,10 +118,10 @@ class Customer {
   async #selectBaseURL(serviceName: string) {
     if (process.env.NODE_ENV !== 'development') return serviceName
     const packet = await this.#dnsClient.resolve(`${serviceName}.bakery`, 'SRV')
-    const answer = packet.answers.find((answer) => answer.name === `${serviceName}.bakery`)
+    const answer: any = packet.answers.find((answer) => answer.name === `${serviceName}.bakery`)
     if (!answer) return
-    // @ts-ignore
-    return `${answer.target}:${answer.port}`
+    const address = ip.ipv6.enclose(answer.target)
+    return `${address}:${answer.port}`
   }
 
   #generateFetcher = (methods: Set<string>, serviceName: string, prefix: string[]) => {
