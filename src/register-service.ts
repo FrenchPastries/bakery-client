@@ -99,7 +99,7 @@ export class RegisterService extends EventEmitter {
     const pjsonVersion = pjsonContent.version as string | undefined
     const name = serviceInfos.name ?? lastNamePart(pjsonName)
     const version = serviceInfos.version ?? pjsonVersion
-    const address = serviceInfos.address ?? `${os.networkInterfaces().en0![1].address}`
+    const address = serviceInfos.address ?? `${getNetworkInterface()}`
     if (!name) throw new Error('No name found in package.json or infos')
     if (!version) throw new Error('No version found in package.json or infos')
     if (!address) throw new Error('No address found')
@@ -112,4 +112,14 @@ export class RegisterService extends EventEmitter {
       interface: serviceInfos.interface,
     }
   }
+}
+
+const getNetworkInterface = () => {
+  const interfaces = os.networkInterfaces()
+  const ips = [...(interfaces.en0 ?? []), ...(interfaces.eth0 ?? [])]
+  return ips.sort((a, b) => {
+    if (a.family === 'IPv4') return -1
+    if (a.address.length < b.address.length) return -1
+    return 1
+  })[0]?.address
 }
